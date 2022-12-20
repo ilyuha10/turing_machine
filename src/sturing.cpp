@@ -1,5 +1,6 @@
 #include "sturing.h"
 #include<QTextCodec>
+#include<string>
 #include<QHeaderView>
 STuring::STuring() {
     TMTable = new QTableWidget(1,30);
@@ -96,6 +97,7 @@ void STuring::run() {
     for(int i = 0;i<30;i++)
     {
         QTableWidgetItem* tmp1 = TMTable->takeItem(0,i);
+
         if(tmp1)
             cols.push_back(tmp1->text().toInt());
     }
@@ -107,6 +109,7 @@ void STuring::run() {
     for(int i = 0; i < src_list.size(); ++i) {
         QString tmp3 = src_list.at(i);
         string cmd = tmp3.toStdString();
+        qDebug(cmd.c_str());
         cmd = uncomment(cmd);
         if(cmd.size() > 0) {
             stack_src.push_back(cmd);
@@ -165,7 +168,7 @@ void STuring::go(std::vector<int> cols) {
                 qApp->processEvents();
             }
             //TMLine->setText(QString::fromStdString(line));
-            execute_command(stack_src[i]);
+            execute_command(stack_src[i], 1);
             //TMLine->setSelection(pointer, 1);
             i = -1;
         }
@@ -213,7 +216,8 @@ void STuring::setSrcSize() {
 string STuring::get_state(string& cmd) {return get(cmd, 0);}
 string STuring::get_read_letter(string& cmd) {return get(cmd, 1);}
 string STuring::get_write_letter(string& cmd) {return get(cmd, 2);}
-string STuring::get_next_state(string& cmd) {return get(cmd, 3);}
+string STuring::get_direction(string& cmd){return get(cmd,3);}
+string STuring::get_next_state(string& cmd) {return get(cmd, 4);}
 
 string STuring::uncomment(string& str) {
     string tmp;
@@ -244,14 +248,17 @@ bool STuring::test_of_execute(string& cmd) {
     return state == now_state && read_letter[0] == line[pointer];
 }
 
-void STuring::execute_command(string& cmd) {
-    string write_letter = get_write_letter(cmd);
+void STuring::execute_command(string& cmd, int col) {
+    string dir = get_direction(cmd);
     string next_state = get_next_state(cmd);
+    string write_letter = get_write_letter(cmd);
 
-    if(write_letter == ">") {move_right();}
-    else if(write_letter == "<") {move_left();}
-    else if(write_letter == "#") {stopped = true;}
-    else {change_letter(write_letter[0]);}
+
+    if(dir == ">") {move_right();}
+    else if(dir == "<") {move_left();}
+    else if(dir == "#") {stopped = true;}
+
+    change_letter(atoi(write_letter.c_str()), col);
 
     now_state = next_state;
 
@@ -262,8 +269,9 @@ void STuring::execute_command(string& cmd) {
 
 }
 
-void STuring::change_letter(char let) {
-    line[pointer] = let;
+void STuring::change_letter(int wr, int col) {
+    QTableWidgetItem qi = new QTableWidgetItem(QString(std::to_string(wr).c_str()));
+    TMTable->setItem(1,col,qi);
 }
 
 void STuring::move_right() {

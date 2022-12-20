@@ -53,8 +53,8 @@ private:
     double speed;
 
     void go(std::vector<int> cols);
-    void execute_command(string& cmd);
-    void change_letter(char let);
+    void execute_command(string& cmd, int col);
+    void change_letter(int let, int col);
     void move_right();
     void move_left();
     void stop();
@@ -63,6 +63,7 @@ private:
     string get_read_letter(string& cmd);
     string get_write_letter(string& cmd);
     string get_next_state(string& cmd);
+    string get_direction(string& cmd);
     string get(string& cmd, int k);
     string uncomment(string& str);
 
